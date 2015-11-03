@@ -15,7 +15,7 @@ import System.IO
 
 import CipherSaber2
 
-data ArgInd = ArgEncrypt | ArgDecrypt | ArgKey | ArgVersion
+data ArgInd = ArgEncrypt | ArgDecrypt | ArgKey | ArgReps
      deriving (Ord, Eq, Show)
 
 argd :: [ Arg ArgInd ]
@@ -35,18 +35,19 @@ argd = [
      argDesc = "Use encryption mode."
   },
   Arg {
+     argIndex = ArgReps,
+     argName = Just "reps",
+     argAbbr = Just 'r',
+     argData = argDataDefaulted "number" ArgtypeInt 20,
+     argDesc = "Number of key scheduling reps " ++
+               "(use 1 for CipherSaber-1, default 20)."
+  },
+  Arg {
      argIndex = ArgKey,
      argName = Nothing,
      argAbbr = Nothing,
      argData = argDataRequired "key" ArgtypeString,
      argDesc = "Encryption or decryption key."
-  },
-  Arg {
-     argIndex = ArgVersion,
-     argName = Just "version",
-     argAbbr = Just 'v',
-     argData = argDataDefaulted "number" ArgtypeInt 2,
-     argDesc = "CipherSaber version (1 or 2, default 1)."
   } ]
 
 makeIV :: IO [Word8]
@@ -66,17 +67,14 @@ main = do
   let k = toBytes $ getRequiredArg argv ArgKey
   let e = gotArg argv ArgEncrypt
   let d = gotArg argv ArgDecrypt
-  let v = getRequiredArg argv ArgVersion :: Int
+  let r = getRequiredArg argv ArgReps :: Int
   unless ((e && not d) || (d && not e)) $
     usageError argv "Exactly one of -e or -d is required."
-  let (ec, dc) =
-          case v of
-            1 -> (encrypt1, decrypt1)
-            2 -> (encrypt, decrypt)
-            _ -> usageError argv "Unknown CipherSaber version."
   case e of
     True -> do
       iv <- makeIV
-      BS.interact (BS.pack . ec k iv . map (fromIntegral . ord) . BSC.unpack)
+      BS.interact (BS.pack . encrypt r k iv .
+                   map (fromIntegral . ord) . BSC.unpack)
     False -> do
-      BS.interact (BSC.pack . map (chr . fromIntegral) . dc k . BS.unpack)
+      BS.interact (BSC.pack . map (chr . fromIntegral) .
+                   decrypt r k . BS.unpack)
