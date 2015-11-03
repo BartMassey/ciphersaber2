@@ -13,13 +13,13 @@ name:                ciphersaber
 version:             0.1.0.0
 
 -- A short (one-line) description of the package.
-synopsis:            Implementations of Ciphersaber RC4
+synopsis:            Implementations of CipherSaber RC4
 
 -- A longer description of the package.
 
-description:         This package implements Ciphersaber, a standard
-                     for RC4 encryption. See the project
-                     home page for details.
+description:         This package implements CipherSaber-2, a
+                     standard for RC4 encryption. See the
+                     project website for details.
 
 -- URL for the project homepage or repository.
 homepage:            http://github.com/BartMassey/ciphersaber
@@ -53,7 +53,7 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Ciphersaber
+  exposed-modules:     CipherSaber2
   
   -- Modules included in this library but not exported.
   -- other-modules:       
