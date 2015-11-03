@@ -1,15 +1,12 @@
 -- Copyright © 2015 Bart Massey
 
 -- | Implementation of the "CipherSaber-2" RC4 encryption
--- format. Also provides raw RC4 keystream generators and
--- a CipherSaber-1 implementation.
+-- format. Also provides a raw RC4 keystream generator.
 --
 -- This work is licensed under the "MIT License".  Please
 -- see the file LICENSE in the source distribution of this
 -- software for license terms.
-module CipherSaber2 (rc4, rc4dropN, encryptDropN, decryptDropN,
-                     encrypt1, decrypt1, encrypt, decrypt,
-                     toBytes, fromBytes) where
+module CipherSaber2 (rc4, encrypt, decrypt, toBytes, fromBytes) where
 
 import Control.Monad
 import Control.Monad.ST.Safe
@@ -27,14 +24,20 @@ ivLength = 10
 -- a key of less than 54 bytes for best mixing. At most,
 -- the first 256 bytes of the key are even used.
 --
--- This code takes a length of keystream to generate, which
--- is un-Haskellike but hard to avoid given the strictness
--- of 'STUArray'. An alternative would be to pass the
--- plaintext in and combine it here, but this interface was
--- chosen as "simpler". The performance implications of this
--- choice need to be explored.
-rc4 :: Int -> [Word8] -> [Word8]
-rc4 keystreamLength key =
+-- This function takes a parameter for the number of times
+-- to repeat the key mixing loop ala "CipherSaber-2". It
+-- should probably be set to at least 20.
+-- 
+-- This function takes a length of keystream to generate,
+-- which is un-Haskellike but hard to avoid given the
+-- strictness of 'STUArray'. An alternative would be to pass
+-- the plaintext in and combine it here, but this interface
+-- was chosen as "simpler". Another choice would be to leave
+-- whole rc4 function in the 'ST' monad, but that seemed
+-- obnoxious. The performance and usability implications of
+-- these choices need to be explored.
+rc4 :: Int -> Int -> [Word8] -> [Word8]
+rc4 scheduleReps keystreamLength key =
     runST $ do
       -- Create and initialize the state.
       s <- newListArray (0, 255) [0..255] :: ST s (STUArray s Word8 Word8)
@@ -48,7 +51,7 @@ rc4 keystreamLength key =
             writeArray s j' si
             return j'
       -- Do the key scheduling.
-      foldM_ schedStep 0 [0..255]
+      foldM_ schedStep 0 $ concat $ replicate scheduleReps [0..255]
       -- Do the keystream generation.
       let keystream 0 _ _ = return []
           keystream n i j = do
@@ -64,13 +67,6 @@ rc4 keystreamLength key =
       -- Get the keystream.
       keystream keystreamLength 0 0
 
--- | RC4 with the first n keystream elements
--- dropped. Dropping 20 or more elements provides increased
--- resistance against known attacks.
-rc4dropN :: Int -> Int -> [Word8] -> [Word8]
-rc4dropN nDrop keystreamLength key =
-  drop nDrop $ rc4 (keystreamLength + 200) key
-
 -- | Convert a 'String' to a list of bytes.
 toBytes :: String -> [Word8]
 toBytes s = map (fromIntegral . ord) s
@@ -79,43 +75,23 @@ toBytes s = map (fromIntegral . ord) s
 fromBytes :: [Word8] -> String
 fromBytes bs = map (chr . fromIntegral) bs
 
--- | CipherSaber requires using a 10-byte initial value (IV) to
--- protect against keystream recovery. Given the key and IV,
--- this code will turn a plaintext message into a sequence
--- of ciphertext bytes.
-encryptDropN :: Int -> [Word8] -> [Word8] -> [Word8] -> [Word8]
-encryptDropN nDrop key iv plaintext
+-- | CipherSaber requires using a 10-byte initial value (IV)
+-- to protect against keystream recovery. Given the key and
+-- IV, this code will turn a a sequence of plaintext message
+-- bytes into a sequence of ciphertext bytes.
+encrypt :: Int -> [Word8] -> [Word8] -> [Word8] -> [Word8]
+encrypt scheduleReps key iv plaintext
     | length iv == ivLength =
-        let keystream = rc4dropN nDrop (length plaintext) (key ++ iv) in
+        let keystream = rc4 scheduleReps (length plaintext) (key ++ iv) in
         iv ++ zipWith xor keystream plaintext
     | otherwise = error $ "expected IV length " ++ show ivLength
 
--- | CipherSaber recovers the IV from the start of the ciphertext.
--- Given the key, this code will turn a sequence of
--- ciphertext bytes into a plaintext 'String' message. (Yes,
--- the type is a little weird.)
-decryptDropN :: Int -> [Word8] -> [Word8] -> [Word8]
-decryptDropN nDrop key ciphertext0 =
+-- | CipherSaber recovers the 10-byte IV from the start of the
+-- ciphertext.  Given the key, this code will turn a
+-- sequence of ciphertext bytes into a sequence of plaintext
+-- bytes.
+decrypt :: Int -> [Word8] -> [Word8] -> [Word8]
+decrypt scheduleReps key ciphertext0 =
     let (iv, ciphertext) = splitAt ivLength ciphertext0
-        keystream = rc4dropN nDrop (length ciphertext) (key ++ iv) in
+        keystream = rc4 scheduleReps (length ciphertext) (key ++ iv) in
     zipWith xor keystream ciphertext
-
--- | CipherSaber-1 encryption has no drops.
-encrypt1 :: [Word8] -> [Word8] -> [Word8] -> [Word8]
-encrypt1 key iv ciphertext =
-    encryptDropN 0 key iv ciphertext
-
--- | CipherSaber-1 decryption has no drops.
-decrypt1 :: [Word8] -> [Word8] -> [Word8]
-decrypt1 key ciphertext =
-    decryptDropN 0 key ciphertext
-
--- | CipherSaber-2 encryption drops 20 bytes.
-encrypt :: [Word8] -> [Word8] -> [Word8] -> [Word8]
-encrypt key iv ciphertext =
-    encryptDropN 20 key iv ciphertext
-
--- | CipherSaber-2 decryption drops 20 bytes.
-decrypt :: [Word8] -> [Word8] -> [Word8]
-decrypt key ciphertext =
-    decryptDropN 20 key ciphertext
