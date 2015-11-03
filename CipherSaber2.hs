@@ -7,7 +7,7 @@
 -- This work is made available under the "MIT License".  See
 -- the file LICENSE in this distribution for license terms.
 module CipherSaber2 (rc4, rc4dropN, encryptDropN, decryptDropN,
-                     encrypt1, decrypt1,
+                     encrypt1, decrypt1, encrypt, decrypt,
                      toBytes, fromBytes) where
 
 import Control.Monad
@@ -89,7 +89,7 @@ encryptDropN nDrop key iv plaintext
         iv ++ zipWith xor keystream plaintext
     | otherwise = error $ "expected IV length " ++ show ivLength
 
--- | Ciphersaber recovers the IV from the start of the ciphertext.
+-- | CipherSaber recovers the IV from the start of the ciphertext.
 -- Given the key, this code will turn a sequence of
 -- ciphertext bytes into a plaintext 'String' message. (Yes,
 -- the type is a little weird.)
@@ -99,10 +99,22 @@ decryptDropN nDrop key ciphertext0 =
         keystream = rc4dropN nDrop (length ciphertext) (key ++ iv) in
     zipWith xor keystream ciphertext
 
--- | Ciphersaber-1 encryption has no drops.
+-- | CipherSaber-1 encryption has no drops.
 encrypt1 :: [Word8] -> [Word8] -> [Word8] -> [Word8]
-encrypt1 = encryptDropN 0
+encrypt1 key iv ciphertext =
+    encryptDropN 0 key iv ciphertext
 
--- | Ciphersaber-1 decryption has no drops.
+-- | CipherSaber-1 decryption has no drops.
 decrypt1 :: [Word8] -> [Word8] -> [Word8]
-decrypt1 = decryptDropN 0
+decrypt1 key ciphertext =
+    decryptDropN 0 key ciphertext
+
+-- | CipherSaber-2 encryption drops 20 bytes.
+encrypt :: [Word8] -> [Word8] -> [Word8] -> [Word8]
+encrypt key iv ciphertext =
+    encryptDropN 20 key iv ciphertext
+
+-- | CipherSaber-2 decryption drops 20 bytes.
+decrypt :: [Word8] -> [Word8] -> [Word8]
+decrypt key ciphertext =
+    decryptDropN 20 key ciphertext
