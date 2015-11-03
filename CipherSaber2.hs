@@ -4,8 +4,9 @@
 -- format. Also provides raw RC4 keystream generators and
 -- a CipherSaber-1 implementation.
 --
--- This work is made available under the "MIT License".  See
--- the file LICENSE in this distribution for license terms.
+-- This work is licensed under the "MIT License".  Please
+-- see the file LICENSE in the source distribution of this
+-- software for license terms.
 module CipherSaber2 (rc4, rc4dropN, encryptDropN, decryptDropN,
                      encrypt1, decrypt1, encrypt, decrypt,
                      toBytes, fromBytes) where
