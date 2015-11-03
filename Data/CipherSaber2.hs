@@ -6,8 +6,10 @@
 -- This work is licensed under the "MIT License".  Please
 -- see the file LICENSE in the source distribution of this
 -- software for license terms.
-module CipherSaber2 (ByteString, rc4, encrypt, decrypt,
-                     toByteString, fromByteString) where
+module Data.CipherSaber2 (
+  ByteString, rc4, encrypt, decrypt,
+  toByteString, fromByteString )
+  where
 
 import Control.Monad
 import Control.Monad.ST.Safe

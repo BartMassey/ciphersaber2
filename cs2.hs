@@ -7,10 +7,9 @@
 
 import Control.Monad
 import qualified Data.ByteString.Char8 as BS
+import Data.CipherSaber2
 import System.Console.ParseArgs
 import System.IO
-
-import CipherSaber2
 
 data ArgInd = ArgEncrypt | ArgDecrypt | ArgKey | ArgReps
      deriving (Ord, Eq, Show)
