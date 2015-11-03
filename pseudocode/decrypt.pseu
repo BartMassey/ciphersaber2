@@ -1,0 +1,19 @@
+%% Copyright © 2015 Bart Massey
+%% This work is available under the "MIT License".
+%% Please see the file LICENSE in the source
+%% distribution of this software for license terms.
+%ident rc4 encrypt decrypt n m k l r iv S i j keystream
+%keyword repeat times mod append xor length
+
+-- "Ciphersaber-2 decrypt ciphertext" m "with key" k "and"
+-- r "rounds of key scheduling"
+decrypt(m, r, k):
+     n <- length m
+     iv <- m[0..9]
+     "delete the first 10 characters of" m
+     k' <- prepend k to iv
+     keystream <- rc4(n - 10, r, k')
+     plaintext <- "zero-based array of" n - 10 "bytes"
+     for i in 0..n-10
+         plaintext[i] <- m[i] xor keystream[i]
+     return plaintext

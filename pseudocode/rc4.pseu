@@ -1,0 +1,30 @@
+%% Copyright © 2015 Bart Massey
+%% This work is available under the "MIT License".
+%% Please see the file LICENSE in the source
+%% distribution of this software for license terms.
+%ident rc4 encrypt decrypt n m k l r iv S i j keystream
+%keyword repeat times mod length
+
+-- "Produce an RC4 keystream of length" n "with"
+-- r "rounds of key scheduling given key" k
+rc4(n, r, k):
+    l <- length k
+    -- Initialize the array.
+    S <- "zero-based array of 256 bytes"
+    for i in 0..255
+        S[i] <- i
+    -- Do key scheduling.
+    j <- 0
+    repeat r times
+        for i in 0..255
+            j <- (j + S[i] + k[i mod l]) mod 256
+            S[i] <-> S[j]
+    -- Finally, produce the stream.
+    keystream <- "zero-based array of" n "bytes"
+    j <- 0
+    for i in 0..n-1
+        i' <- i mod 256
+        j <- (j + S[i']) mod 256
+        S[i'] <-> S[j]
+        keystream[i] <- S[(S[i'] + S[j]) mod 256]
+    return keystream
