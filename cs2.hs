@@ -6,10 +6,7 @@
 -- CipherSaber driver for UNIX-like systems with "/dev/random".
 
 import Control.Monad
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BSC
-import Data.Char
-import Data.Word
+import qualified Data.ByteString.Char8 as BS
 import System.Console.ParseArgs
 import System.IO
 
@@ -50,21 +47,19 @@ argd = [
      argDesc = "Encryption or decryption key."
   } ]
 
-makeIV :: IO [Word8]
+makeIV :: IO BS.ByteString
 makeIV = 
   withBinaryFile "/dev/urandom" ReadMode $ \h ->
   do
     hSetBuffering h NoBuffering
-    ivs <- BS.hGet h 10
-    BS.hPut stdout ivs
-    return $ BS.unpack ivs
+    BS.hGet h 10
 
 main :: IO ()
 main = do
   hSetBinaryMode stdin True
   hSetBinaryMode stdout True
   argv <- parseArgsIO ArgsComplete argd
-  let k = toBytes $ getRequiredArg argv ArgKey
+  let k = toByteString $ getRequiredArg argv ArgKey
   let e = gotArg argv ArgEncrypt
   let d = gotArg argv ArgDecrypt
   let r = getRequiredArg argv ArgReps :: Int
@@ -73,8 +68,6 @@ main = do
   case e of
     True -> do
       iv <- makeIV
-      BS.interact (BS.pack . encrypt r k iv .
-                   map (fromIntegral . ord) . BSC.unpack)
+      BS.interact (encrypt r k iv)
     False -> do
-      BS.interact (BSC.pack . map (chr . fromIntegral) .
-                   decrypt r k . BS.unpack)
+      BS.interact (decrypt r k)

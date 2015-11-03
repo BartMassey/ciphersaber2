@@ -63,7 +63,8 @@ library
   
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.7 && <5,
-                       array >=0.5 && <1
+                       array >=0.5 && <1,
+                       bytestring >= 0.10 && < 1
   
   -- Directories containing source files.
   -- hs-source-dirs:      

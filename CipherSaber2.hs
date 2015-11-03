@@ -6,13 +6,17 @@
 -- This work is licensed under the "MIT License".  Please
 -- see the file LICENSE in the source distribution of this
 -- software for license terms.
-module CipherSaber2 (rc4, encrypt, decrypt, toBytes, fromBytes) where
+module CipherSaber2 (ByteString, rc4, encrypt, decrypt,
+                     toByteString, fromByteString) where
 
 import Control.Monad
 import Control.Monad.ST.Safe
+import Data.Array
 import Data.Array.ST
 import Data.Bits
-import Data.Char
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as BC
 import Data.Word
 
 -- | Number of bytes of IV to use in CipherSaber encryption/decryption
@@ -36,15 +40,18 @@ ivLength = 10
 -- whole rc4 function in the 'ST' monad, but that seemed
 -- obnoxious. The performance and usability implications of
 -- these choices need to be explored.
-rc4 :: Int -> Int -> [Word8] -> [Word8]
+rc4 :: Int -> Int -> ByteString -> ByteString
 rc4 scheduleReps keystreamLength key =
-    runST $ do
+    B.pack $ runST $ do
+      let nKey = fromIntegral $ B.length key :: Word8
+      let key' = listArray (0, fromIntegral (nKey - 1)) $ B.unpack key ::
+                 Array Word8 Word8
       -- Create and initialize the state.
       s <- newListArray (0, 255) [0..255] :: ST s (STUArray s Word8 Word8)
       -- One step of the key schedule
       let schedStep j i = do
             si <- readArray s i
-            let keyByte = key !! (fromIntegral i `mod` length key)
+            let keyByte = key' ! (i `mod` nKey)
             let j' = j + si + keyByte
             sj <- readArray s j'
             writeArray s i sj
@@ -67,31 +74,35 @@ rc4 scheduleReps keystreamLength key =
       -- Get the keystream.
       keystream keystreamLength 0 0
 
--- | Convert a 'String' to a list of bytes.
-toBytes :: String -> [Word8]
-toBytes s = map (fromIntegral . ord) s
+-- | Convert a 'String' to a 'ByteString'.
+toByteString :: String -> ByteString
+toByteString s = BC.pack s
 
--- | Convert a list of bytes to a 'String'.
-fromBytes :: [Word8] -> String
-fromBytes bs = map (chr . fromIntegral) bs
+-- | Convert a 'ByteString' to a 'String'.
+fromByteString :: ByteString -> String
+fromByteString bs = BC.unpack bs
 
 -- | CipherSaber requires using a 10-byte initial value (IV)
 -- to protect against keystream recovery. Given the key and
 -- IV, this code will turn a a sequence of plaintext message
 -- bytes into a sequence of ciphertext bytes.
-encrypt :: Int -> [Word8] -> [Word8] -> [Word8] -> [Word8]
+encrypt :: Int -> ByteString -> ByteString -> ByteString -> ByteString
 encrypt scheduleReps key iv plaintext
-    | length iv == ivLength =
-        let keystream = rc4 scheduleReps (length plaintext) (key ++ iv) in
-        iv ++ zipWith xor keystream plaintext
+    | B.length iv == ivLength =
+        let keystream = rc4 scheduleReps
+                        (B.length plaintext)
+                        (B.append key iv) in
+        B.append iv $ B.pack $ B.zipWith xor keystream plaintext
     | otherwise = error $ "expected IV length " ++ show ivLength
 
 -- | CipherSaber recovers the 10-byte IV from the start of the
 -- ciphertext.  Given the key, this code will turn a
 -- sequence of ciphertext bytes into a sequence of plaintext
 -- bytes.
-decrypt :: Int -> [Word8] -> [Word8] -> [Word8]
+decrypt :: Int -> ByteString -> ByteString -> ByteString
 decrypt scheduleReps key ciphertext0 =
-    let (iv, ciphertext) = splitAt ivLength ciphertext0
-        keystream = rc4 scheduleReps (length ciphertext) (key ++ iv) in
-    zipWith xor keystream ciphertext
+    let (iv, ciphertext) = B.splitAt ivLength ciphertext0
+        keystream = rc4 scheduleReps
+                    (B.length ciphertext)
+                    (B.append key iv) in
+    B.pack $ B.zipWith xor keystream ciphertext
