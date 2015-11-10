@@ -66,7 +66,7 @@ schedule a given number of times.
 > &nbsp;&nbsp;&nbsp;&nbsp;*keystream*&nbsp;&#8592;&nbsp;zero-based array of&nbsp;*n*&nbsp;bytes  
 > &nbsp;&nbsp;&nbsp;&nbsp;*j*&nbsp;&#8592;&nbsp;0  
 > &nbsp;&nbsp;&nbsp;&nbsp;**for**&nbsp;*i*&nbsp;**in**&nbsp;0..n-1  
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i'&nbsp;&#8592;&nbsp;*i*&nbsp;**mod**&nbsp;256  
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i'&nbsp;&#8592;&nbsp;*1* + 1&nbsp;**mod**&nbsp;256  
 > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*j*&nbsp;&#8592;&nbsp;(*j*&nbsp;+&nbsp;*S*[i'])&nbsp;**mod**&nbsp;256  
 > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*S*[i']&nbsp;<->&nbsp;*S*[*j*]  
 > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*keystream*[*i*]&nbsp;&#8592;&nbsp;*S*[(*S*[i']&nbsp;+&nbsp;*S*[*j*])&nbsp;**mod**&nbsp;256]  
