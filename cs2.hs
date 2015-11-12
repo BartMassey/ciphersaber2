@@ -6,12 +6,14 @@
 -- CipherSaber driver for UNIX-like systems with "/dev/random".
 
 import Control.Monad
-import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString as BS
 import Data.CipherSaber2
+import Data.Char
+import Data.Word
 import System.Console.ParseArgs
 import System.IO
 
-data ArgInd = ArgEncrypt | ArgDecrypt | ArgKey | ArgReps
+data ArgInd = ArgEncrypt | ArgDecrypt | ArgKey | ArgReps | ArgIV
      deriving (Ord, Eq, Show)
 
 argd :: [ Arg ArgInd ]
@@ -37,6 +39,13 @@ argd = [
      argData = argDataDefaulted "number" ArgtypeInt 20,
      argDesc = "Number of key scheduling reps " ++
                "(use 1 for CipherSaber-1, default 20)."
+  },
+  Arg {
+     argIndex = ArgIV,
+     argName = Just "iv",
+     argAbbr = Just 'i',
+     argData = argDataOptional "hex-string" ArgtypeString,
+     argDesc = "IV as a series of hex digits."
   },
   Arg {
      argIndex = ArgKey,
@@ -66,7 +75,20 @@ main = do
     usageError argv "Exactly one of -e or -d is required."
   case e of
     True -> do
-      iv <- makeIV
+      iv <- case getArg argv ArgIV of
+              Nothing -> makeIV
+              Just ivString -> return (makeBS argv ivString)
       BS.interact (encrypt r k iv)
     False -> do
       BS.interact (decrypt r k)
+  where
+    makeBS argv desc =
+        BS.pack $ reassembleIV desc
+        where
+          reassembleIV :: String -> [Word8]
+          reassembleIV [] = []
+          reassembleIV (c1 : c2 : cs)
+              | isHexDigit c1 && isHexDigit c2 =
+                  let aByte = 16 * digitToInt c1 + digitToInt c2 in
+                  fromIntegral aByte : reassembleIV cs
+          reassembleIV _ = usageError argv "Bad IV string."
