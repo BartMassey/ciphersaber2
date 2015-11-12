@@ -8,7 +8,7 @@
 -- software for license terms.
 module Data.CipherSaber2 (
   ByteString, rc4, encrypt, decrypt,
-  toByteString, fromByteString )
+  toByteString, fromByteString, ivLength )
   where
 
 import Control.Monad

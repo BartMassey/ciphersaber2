@@ -7,6 +7,7 @@
 
 import Control.Monad
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
 import Data.CipherSaber2
 import Data.Char
 import Data.Word
@@ -45,7 +46,8 @@ argd = [
      argName = Just "iv",
      argAbbr = Just 'i',
      argData = argDataOptional "hex-string" ArgtypeString,
-     argDesc = "IV as a series of hex digits."
+     argDesc = "IV as " ++ show (ivLength * 2) ++ " hex digits with" ++
+               " leading 0x, or " ++ show ivLength ++ " chars."
   },
   Arg {
      argIndex = ArgKey,
@@ -82,11 +84,17 @@ main = do
     False -> do
       BS.interact (decrypt r k)
   where
-    makeBS argv desc =
-        BS.pack $ reassembleIV desc
+    makeBS argv desc
+        | take 2 desc == "0x" && length desc == 2 * ivLength + 2 =
+              BS.pack $ reassembleIV $ drop 2 desc
+        | length desc == ivLength =
+            BSC.pack desc
+        | otherwise =
+            usageError argv $ "IV length must be " ++
+                              show ivLength ++ " bytes."
         where
           reassembleIV :: String -> [Word8]
-          reassembleIV [] = []
+          reassembleIV "" = []
           reassembleIV (c1 : c2 : cs)
               | isHexDigit c1 && isHexDigit c2 =
                   let aByte = 16 * digitToInt c1 + digitToInt c2 in
