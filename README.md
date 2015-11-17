@@ -61,18 +61,19 @@ schedule a given number of times.
 > &nbsp;&nbsp;&nbsp;&nbsp;**repeat**&nbsp;*r*&nbsp;**times**  
 > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**for**&nbsp;*i*&nbsp;**in**&nbsp;0..255  
 > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*j*&nbsp;&#8592;&nbsp;(*j*&nbsp;+&nbsp;*S*[*i*]&nbsp;+&nbsp;*k*[*i*&nbsp;**mod**&nbsp;*l*])&nbsp;**mod**&nbsp;256  
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*S*[*i*]&nbsp;<->&nbsp;*S*[*j*]  
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*S*[*i*]&nbsp;&#8596;&nbsp;*S*[*j*]  
 > &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Finally,&nbsp;produce&nbsp;the&nbsp;stream.  
 > &nbsp;&nbsp;&nbsp;&nbsp;*keystream*&nbsp;&#8592;&nbsp;zero-based array of&nbsp;*n*&nbsp;bytes  
 > &nbsp;&nbsp;&nbsp;&nbsp;*j*&nbsp;&#8592;&nbsp;0  
 > &nbsp;&nbsp;&nbsp;&nbsp;**for**&nbsp;*i*&nbsp;**in**&nbsp;0..n-1  
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i'&nbsp;&#8592;&nbsp;*(i + 1)*&nbsp;**mod**&nbsp;256  
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i'&nbsp;&#8592;&nbsp;(*i*&nbsp;+&nbsp;1)&nbsp;**mod**&nbsp;256  
 > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*j*&nbsp;&#8592;&nbsp;(*j*&nbsp;+&nbsp;*S*[i'])&nbsp;**mod**&nbsp;256  
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*S*[i']&nbsp;<->&nbsp;*S*[*j*]  
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*S*[i']&nbsp;&#8596;&nbsp;*S*[*j*]  
 > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*keystream*[*i*]&nbsp;&#8592;&nbsp;*S*[(*S*[i']&nbsp;+&nbsp;*S*[*j*])&nbsp;**mod**&nbsp;256]  
 > &nbsp;&nbsp;&nbsp;&nbsp;**return**&nbsp;*keystream*  
 
 <!-- End of pseuf translation of rc4.pseu -->
+
 
 CS2 encryption requires a plaintext message (treated as a
 bytestream), a key with a recommended maximum size of 53
