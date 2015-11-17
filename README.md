@@ -76,15 +76,20 @@ schedule a given number of times.
 
 
 CS2 encryption requires a plaintext message (treated as a
-bytestream), a key with a recommended maximum size of 53
-bytes and a required maximum size of 256 bytes, and an
-"initial value"
+bytestream), a key, and an "initial value"
 ([IV](http://en.wikipedia.org/wiki/Initialization_vector))
-of 10 bytes. The IV is a
+of 10 bytes. The key *should* be no more than 53 bytes, to
+ensure good mixing during key scheduling.
+
+The IV is a
 [nonce](http://en.wikipedia.org/wiki/Cryptographic_nonce)
 that must be different for each message sent: it should be
 chosen randomly if possible, but may be chosen
 pseudo-randomly or even just counted if necessary.
+CS2 appends the IV to the CS2 key to produce an RC4 key.
+RC4 uses only the first 256 RC4 key bytes. Thus, the CS2 key
+*must* be no more than 246 bytes: a longer CS2 key would
+cause some or all of the IV to not be used by RC4.
 
 <!-- This pseudocode translated from encrypt.pseu by pseuf -->
 
