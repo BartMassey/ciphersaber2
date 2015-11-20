@@ -140,8 +140,32 @@ for details.
 ## Driver
 
 The program `cs2` uses the `CipherSaber2` library to encrypt
-or decrypt `stdin` to `stdout`. Say "`cs2 --help`" for usage
-information.
+or decrypt `stdin` to `stdout`.
+
+`cs2` is written in Haskell, so you will need a Haskell
+installation to run it. It depends on the package
+`[parseargs](http://hackage.haskell.org/package/parseargs)`
+from [Hackage](http://hackage.haskell.org), as well as the
+`bytestring` package that should probably have come with
+your distribution but may need to be installed. Say "`cabal
+install parseargs`" and "`cabal install bytestring`" to get
+things set up. (This in turn may require a `cabal-install`
+package from your Linux distribution or thereabouts.)
+
+Say "`runghc cs2.hs --help`" for usage information.
+
+Say "`runghc cs2.hs -e whee <f.txt >g.cs2`" to encrypt the
+file `f.txt` with key `whee`. An IV will be automatically
+chosen.
+
+Say "`runghc cs2.hs -d whee <g.cs2 >ff.txt`" to decrypt the
+file `g.cs2` with key `whee`.
+
+## Test Instances
+
+The `test` directory include a bunch of plaintext/ciphertext
+pairs taken from the original CS2 materials. Please see
+`README.md` in that directory for more information.
 
 ## License
 
