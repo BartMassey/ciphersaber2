@@ -14,7 +14,7 @@ name:                ciphersaber2
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.1.1.0
+version:             0.1.1.1
 
 -- A short (one-line) description of the package.
 synopsis:            Implementation of CipherSaber2 RC4 cryptography.
@@ -61,7 +61,7 @@ source-repository head
 source-repository this
   type:     git
   location: http://github.com/BartMassey/ciphersaber2
-  tag:      v0.1.1.0
+  tag:      v0.1.1.1
 
 library
   -- Modules exported by the library.
@@ -74,7 +74,7 @@ library
   -- other-extensions:    
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.7 && <5,
+  build-depends:       base >=4 && <5,
                        array >=0.5 && <1,
                        bytestring >= 0.10 && < 1
   
@@ -91,7 +91,7 @@ executable cs2
   other-modules: Data.CipherSaber2
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.7 && <5,
+  build-depends:       base >=4 && <5,
                        array >=0.5 && <1,
                        parseargs >= 0.1 && < 1,
                        bytestring >= 0.10 && < 1
