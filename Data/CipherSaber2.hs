@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP, FlexibleContexts #-}
 -- Copyright © 2015 Bart Massey
 
 -- | Implementation of the "CipherSaber-2" RC4 encryption
@@ -12,7 +13,11 @@ module Data.CipherSaber2 (
   where
 
 import Control.Monad
+#if __GLASGOW_HASKELL__ < 710
 import Control.Monad.ST.Safe
+#else
+import Control.Monad.ST
+#endif
 import Data.Array
 import Data.Array.ST
 import Data.Bits

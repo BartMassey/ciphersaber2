@@ -14,7 +14,7 @@ name:                ciphersaber2
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.1.1.1
+version:             0.1.1.2
 
 -- A short (one-line) description of the package.
 synopsis:            Implementation of CipherSaber2 RC4 cryptography.
@@ -61,7 +61,7 @@ source-repository head
 source-repository this
   type:     git
   location: http://github.com/BartMassey/ciphersaber2
-  tag:      v0.1.1.1
+  tag:      v0.1.1.2
 
 library
   -- Modules exported by the library.
